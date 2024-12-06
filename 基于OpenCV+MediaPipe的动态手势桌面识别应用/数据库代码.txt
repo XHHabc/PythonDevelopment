@@ -1,0 +1,190 @@
+异常解决方法：
+1、用dbeaver链接mysql时出现该问题Public Key Retrieval is not allowed 
+解决方法：https://www.jb51.net/database/303331siy.htm
+
+
+数据流============================================================
+启动程序时初始化combox数据为operate表数据。
+点击保存按钮则修改operate表，
+点击恢复默认按钮则读取operate_default表数据并填入combox中。
+
+
+用户表=====================================================================
+
+CREATE TABLE user (
+    id INT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    phone VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL
+);
+
+-- 插入用户数据
+INSERT INTO user (id, username, password, phone, email)
+VALUES
+    (1, '111111', 'a11111', '13245678910','111@qq.com'),
+    (2, '222222', 'b22222', '15545678910','222@qq.com'),
+    (3, '333333', 'c33242', '13245678910','1cc1@qq.com'),
+    (4, '444444', 'd44444', '15545678910','222@qq.com'),
+    (5, '555555', 'e55555', '13245678910','12341@qq.com'),
+    (6, '226662', 'f12122', '15545678910','222@qq.com'),
+    (7, '177711', 'g45451', '13245678910','11551@qq.com'),
+    (8, '888128', 'h78782', '15545678910','222@qq.com');
+
+管理员账户表=====================================================================
+
+CREATE TABLE adaccount (
+    id INT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    phone VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    level VARCHAR(10) NOT NULL,
+    state VARCHAR(10) NOT NULL
+);
+
+-- 插入管理员账户数据
+INSERT INTO adaccount (id, username, password, phone, email, name, level, state)
+VALUES
+    (1, 'root', 'a12345', '13245678910','123@qq.com','张三','1','正常'),
+    (2, '5556789', 'a67891', '15545678910','555@qq.com','李四','2','正常');
+
+
+自定义设置表================================================================
+
+-- 创建表
+CREATE TABLE IF NOT EXISTS operate (
+    id INT,
+    operation_name VARCHAR(255),
+    trigger_num1 INT,
+    trigger_num2 INT
+);
+
+-- 插入数据
+INSERT INTO operate (id, operation_name, trigger_num1, trigger_num2)
+VALUES
+    (1, '复制', 4, 16),
+    (2, '粘贴', 4, 13),
+    (3, '返回桌面', 4, 20),
+    (4, '截图', 4, 17);
+
+
+默认表（表名不一样）====================================================
+
+-- 创建表
+CREATE TABLE IF NOT EXISTS operate_default (
+    id INT,
+    operation_name VARCHAR(255),
+    trigger_num1 INT,
+    trigger_num2 INT
+);
+
+-- 插入数据
+INSERT INTO operate_default (id, operation_name, trigger_num1, trigger_num2)
+VALUES
+    (1, '复制', 4, 16),
+    (2, '粘贴', 4, 13),
+    (3, '返回桌面', 4, 20),
+    (4, '截图', 4, 17);
+
+
+建议反馈表=============================================================
+
+-- 创建表
+CREATE TABLE feedback (
+    id INT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    content VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL
+);
+
+数据库连接封装===========================================================
+
+from pymysql import Connect
+
+
+class Database:
+    def __init__(self, host, port, user, password, database):
+        self.conn = Connect(
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            database=database
+        )
+        self.cursor = self.conn.cursor()
+
+    def create_table(self, table_name, columns):
+        # 如果表不存在则创建
+        create_table_query = f"CREATE TABLE IF NOT EXISTS {table_name} ({columns})"
+        self.cursor.execute(create_table_query)
+
+    def insert_data(self, table_name, data):
+        insert_query = f"INSERT INTO {table_name} VALUES ({','.join(['%s'] * len(data))})"
+        self.cursor.execute(insert_query, data)
+
+    def select_data(self, table_name, columns="*", condition=None):
+        select_query = f"SELECT {columns} FROM {table_name}"
+        if condition:
+            select_query += f" WHERE {condition}"
+        self.cursor.execute(select_query)
+        return self.cursor.fetchall()
+
+    def update_data(self, table_name, set_values, condition=None):
+        update_query = f"UPDATE {table_name} SET {set_values}"
+        if condition:
+            update_query += f" WHERE {condition}"
+        self.cursor.execute(update_query)
+
+    def delete_data(self, table_name, condition=None):
+        delete_query = f"DELETE FROM {table_name}"
+        if condition:
+            delete_query += f" WHERE {condition}"
+        self.cursor.execute(delete_query)
+
+    def commit_changes(self):  # 事务提交
+        self.conn.commit()
+
+    def close_connection(self):  # 断开连接
+        self.cursor.close()
+        self.conn.close()
+
+
+
+
+使用展示==================================================================
+# 示例用法
+db = Database('localhost', 3306, 'root', '123456', 'handsData')
+
+# 创建表
+columns = "id INT, operation_name VARCHAR(255), trigger_num1 INT, trigger_num2 INT"
+db.create_table('operate', columns)
+
+# 插入数据
+data = [
+    (1, '复制', 4, 16),
+    (2, '粘贴', 4, 13),
+    (3, '返回桌面', 4, 20),
+    (4, '切图', 4, 17)
+]
+db.insert_data('operate', data)
+
+# 查询数据
+result = db.select_data('operate', condition="id = 3")
+print(result)
+
+# 更新数据
+db.update_data('operate', "operation_name = '复制'", condition="id = 1")
+
+# 删除数据
+db.delete_data('operate', condition="id = 3")
+
+# 提交更改
+db.commit_changes()
+
+# 关闭连接
+db.close_connection()
+
+

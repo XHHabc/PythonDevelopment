@@ -1,0 +1,78 @@
+styleSheet	
+	——bgApp
+		——leftMenuBg	
+			——topLogoInfo——（topLogo，titleLeftApp，titleLeftDescription）
+			——leftMenuFrame
+				——verticalMenuLayout，toggleBox
+				——topMenu——（btn_home，btn_widgets，btn_new，btn_save，btn_computer，btn_exit）
+				——bottomMenu——toggleLeftBox
+		——extraLeftBox
+			——extraColumLayout
+			——extraTopBg——extraIcon，extraLabel，extraCloseColumnBtn
+			——extraContent
+				——extraTopMenu——（btn_share，btn_adjustments，btn_more）
+				——extraCenter——textEdit
+				——extraBottom
+		——contentBox
+			——contentTopBg
+				——leftBox——titleRightInfo
+				——rightButtons——（settingsTopBtn，minimizeAppBtn，maximizeRestoreAppBtn，closeAppBtn）
+			——contentBottom
+				——content——pagesContainer——stackedWidget
+					——extraRightBox
+						——themeSettingsTopDetail
+						——contentSettings
+							——topMenus——btn_message，btn_print，btn_logout
+				——bottomBar——creditsLabel，version，frame_size_grip
+
+
+
+
+
+
+ui_main.py:（ui界面修改该文件）
+705  新按钮样式
+
+773~882  底部设置按钮布局
+1398 新按钮对应页面（手势类+操作计算逻辑）
+
+
+1634  作者、版本号修改
+
+无样式新页面：
+	self.new_page = QWidget()
+        self.new_page.setObjectName(u"new_page")
+        self.stackedWidget.addWidget(self.new_page)
+
+
+
+------------------------------------------
+main.py:
+100  主题颜色修改
+
+提示弹窗：
+QMessageBox.information(self, "提示", "该功能暂未实现", QMessageBox.Yes)
+------------------------------------------
+
+ui图片、图标之类的修改需要重新编译resources.qrc文件，然后替换掉modules软件包内文件：
+pyside6-rcc resources.qrc -o resources_rc.py
+------------------------------------------
+与Qt Designer导出的用户界面相关的文件修改需要重新编译main.ui文件，然后替换掉modules软件包内文件：
+pyside6-uic main.ui> ui_main.py
+------------------------------------------
+
+
+如果你想在命令行中直接运行 PySide6 的可执行文件，你可以将 PySide6 的可执行文件所在的路径（通常是 Python 解释器的 `Scripts` 文件夹）添加到系统的环境变量中。
+在 Windows 上，将 `Scripts` 文件夹的路径添加到系统的环境变量的步骤如下：
+1. 打开 "控制面板"，然后选择 "系统和安全"。
+2. 点击 "系统"，然后在左侧选择 "高级系统设置"。
+3. 在弹出的对话框中，点击 "环境变量"。
+4. 在 "系统变量" 部分，找到名为 "Path" 的变量，并点击 "编辑"。
+5. 在编辑变量的对话框中，点击 "新建"，然后输入 PySide6 `Scripts` 文件夹的路径（例如 `C:\Python39\Scripts`）。
+6. 点击 "确定"，保存更改，并关闭所有对话框。
+
+
+
+
+CSDN文档：https://blog.csdn.net/bl_yang/article/details/128487766
+
